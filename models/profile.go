@@ -15,6 +15,7 @@ type Profile struct {
 	Owned
 	Bundled
 	Partialed
+	Params
 	// The name of the profile.  This must be unique across all
 	// profiles.
 	//
@@ -27,10 +28,6 @@ type Profile struct {
 	// the profile is for, any special considerations that
 	// should be taken into account when using it, etc. in rich structured text (rst).
 	Documentation string
-	// Any additional parameters that may be needed to expand templates
-	// for BootEnv, as documented by that boot environment's
-	// RequiredParams and OptionalParams.
-	Params map[string]interface{}
 	// Additional Profiles that should be considered for parameters
 	Profiles []string
 }
@@ -48,9 +45,7 @@ func (p *Profile) SetMeta(d Meta) {
 // Validate makes sure that the object is valid (outside of references)
 func (p *Profile) Validate() {
 	p.AddError(ValidName("Invalid Name", p.Name))
-	for k := range p.Params {
-		p.AddError(ValidParamName("Invalid Param Name", k))
-	}
+	p.Params.Validate(p)
 	for _, v := range p.Profiles {
 		p.AddError(ValidName("Invalid Profile Name", v))
 	}
@@ -87,9 +82,7 @@ func (p *Profile) Fill() {
 	if p.Meta == nil {
 		p.Meta = Meta{}
 	}
-	if p.Params == nil {
-		p.Params = map[string]interface{}{}
-	}
+	p.Params.Fill()
 	if p.Profiles == nil {
 		p.Profiles = []string{}
 	}
@@ -114,18 +107,6 @@ func (p *Profile) ToModels(obj interface{}) []Model {
 		res[i] = Model(item)
 	}
 	return res
-}
-
-// GetParams returns the current parameters for this profile
-// matches Paramer interface
-func (p *Profile) GetParams() map[string]interface{} {
-	return copyMap(p.Params)
-}
-
-// SetParams sets the current parameters for this profile
-// matches Paramer interface
-func (p *Profile) SetParams(pl map[string]interface{}) {
-	p.Params = copyMap(pl)
 }
 
 // SetName changes the name of the profile

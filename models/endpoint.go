@@ -36,14 +36,12 @@ type Endpoint struct {
 	Meta
 	Owned
 	Bundled
+	Params
 
 	Id string
 
 	Description   string `json:"Description,omitempty"`
 	Documentation string `json:"Documentation,omitempty"`
-
-	// Holds the access parameters.
-	Params map[string]interface{} `json:"Params,omitempty"`
 
 	ConnectionStatus string `json:"ConnectionStatus,omitempty"`
 
@@ -79,6 +77,7 @@ func (e *Endpoint) SetMeta(d Meta) {
 // Validate validates the object
 func (e *Endpoint) Validate() {
 	e.AddError(ValidEndpointName("Invalid Id", e.Id))
+	e.Params.Validate(e)
 }
 
 // Prefix returns the type of object
@@ -107,9 +106,7 @@ func (e *Endpoint) Fill() {
 		e.Meta = Meta{}
 	}
 	e.Validation.fill(e)
-	if e.Params == nil {
-		e.Params = map[string]interface{}{}
-	}
+	e.Params.Fill()
 	if e.VersionSets == nil {
 		e.VersionSets = []string{}
 	}
@@ -149,18 +146,6 @@ func (e *Endpoint) ToModels(obj interface{}) []Model {
 		res[i] = Model(item)
 	}
 	return res
-}
-
-// GetParams returns the parameters on the Endpoint
-// The returned map is a shallow copy.
-func (e *Endpoint) GetParams() map[string]interface{} {
-	return copyMap(e.Params)
-}
-
-// SetParams replaces the current parameters with a shallow
-// copy of the input map.
-func (e *Endpoint) SetParams(p map[string]interface{}) {
-	e.Params = copyMap(p)
 }
 
 // CanHaveActions indicates that the model can have actions

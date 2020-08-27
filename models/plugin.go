@@ -10,6 +10,7 @@ type Plugin struct {
 	Owned
 	Bundled
 	Partialed
+	Params
 	// The name of the plugin instance.  THis must be unique across all
 	// plugins.
 	//
@@ -22,9 +23,6 @@ type Plugin struct {
 	// the plugin is for, any special considerations that
 	// should be taken into account when using it, etc. in rich structured text (rst).
 	Documentation string
-	// Any additional parameters that may be needed to configure
-	// the plugin.
-	Params map[string]interface{}
 	// The plugin provider for this plugin
 	//
 	// required: true
@@ -53,9 +51,7 @@ func (p *Plugin) GetDescription() string {
 func (p *Plugin) Validate() {
 	p.AddError(ValidName("Invalid Name", p.Name))
 	p.AddError(ValidName("Invalid Provider", p.Provider))
-	for k := range p.Params {
-		p.AddError(ValidParamName("Invalid Param Name", k))
-	}
+	p.Params.Validate(p)
 }
 
 func (p *Plugin) SetName(s string) {
@@ -79,9 +75,7 @@ func (n *Plugin) Fill() {
 		n.Meta = Meta{}
 	}
 	n.Validation.fill(n)
-	if n.Params == nil {
-		n.Params = map[string]interface{}{}
-	}
+	n.Params.Fill()
 	if n.PluginErrors == nil {
 		n.PluginErrors = []string{}
 	}
@@ -103,15 +97,6 @@ func (p *Plugin) ToModels(obj interface{}) []Model {
 		res[i] = Model(item)
 	}
 	return res
-}
-
-// match Paramer interface
-func (p *Plugin) GetParams() map[string]interface{} {
-	return copyMap(p.Params)
-}
-
-func (p *Plugin) SetParams(pl map[string]interface{}) {
-	p.Params = copyMap(pl)
 }
 
 func (p *Plugin) CanHaveActions() bool {

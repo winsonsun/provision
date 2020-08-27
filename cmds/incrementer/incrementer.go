@@ -143,21 +143,13 @@ func (p *Plugin) Action(thelog logger.Logger, ma *models.Action) (interface{}, *
 				Type:     "plugin",
 				Messages: []string{fmt.Sprintf("%v", err)}}
 		}
-		parameter, ok := ma.Params["incrementer/parameter"].(string)
-		if !ok {
+		var parameter string
+		if ma.GetParam("incrementer/parameter", &parameter) != nil {
 			parameter = "incrementer/default"
 		}
-		step := 1
-		if pstep, ok := ma.Params["incrementer/step"]; ok {
-			if fstep, ok := pstep.(float64); ok {
-				step = int(fstep)
-			}
-			if istep, ok := pstep.(int64); ok {
-				step = int(istep)
-			}
-			if istep, ok := pstep.(int); ok {
-				step = istep
-			}
+		var step int
+		if ma.GetParam("incrementer/step",&step) != nil {
+			step = 1
 		}
 		val, err := p.updateOrCreateParameter(machine.UUID(), parameter, step)
 		if err == nil {

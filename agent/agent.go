@@ -375,14 +375,12 @@ func (a *Agent) loadKexec() {
 		}
 	}
 	if !kexecOk {
-		v, vok := a.machine.Params["last-boot-macaddr"]
-		macaddr, aok := v.(string)
-		if aok && vok {
-			cmdline = cmdline + " BOOTIF=" + macaddr
-		} else {
+		var macaddr string
+		if err := a.machine.Params.GetParam("last-boot-macaddr",&macaddr); err != nil {
 			a.logf("Could not determine nic we booted from")
 			return
 		}
+		cmdline = cmdline + " BOOTIF=" + macaddr
 	}
 	a.logf("kernel:%s initrd:%s\n", kernel, initrds[0])
 	a.logf("cmdline: %s\n", cmdline)

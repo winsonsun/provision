@@ -13,6 +13,7 @@ type Stage struct {
 	Owned
 	Bundled
 	Partialed
+	Params
 	// The name of the stage.
 	//
 	// required: true
@@ -43,9 +44,6 @@ type Stage struct {
 	// renderer based upon the Machine.Params
 	//
 	OptionalParams []string
-	// Params contains parameters for the stage.
-	// This allows the machine to access these values while in this stage.
-	Params map[string]interface{}
 	// The BootEnv the machine should be in to run this stage.
 	// If the machine is not in this bootenv, the bootenv of the
 	// machine will be changed.
@@ -91,7 +89,7 @@ func (s *Stage) Validate() {
 	if s.BootEnv != "" {
 		s.AddError(ValidName("Invalid BootEnv", s.BootEnv))
 	}
-
+	s.Params.Validate(s)
 	for _, p := range s.RequiredParams {
 		s.AddError(ValidParamName("Invalid Required Param", p))
 	}
@@ -168,9 +166,7 @@ func (s *Stage) Fill() {
 	if s.Profiles == nil {
 		s.Profiles = []string{}
 	}
-	if s.Params == nil {
-		s.Params = map[string]interface{}{}
-	}
+	s.Params.Fill()
 }
 
 // AuthKey returns the value that should be validated against claims
@@ -205,19 +201,6 @@ func (s *Stage) GetProfiles() []string {
 func (s *Stage) SetProfiles(p []string) {
 	s.Profiles = p
 }
-
-// match Paramer interface
-
-// GetParams gets the parameters on this stage
-func (s *Stage) GetParams() map[string]interface{} {
-	return copyMap(s.Params)
-}
-
-// SetParams sets the parameters on this stage
-func (s *Stage) SetParams(p map[string]interface{}) {
-	s.Params = copyMap(p)
-}
-
 // match BootEnver interface
 
 // GetBootEnv gets the name of the bootenv on this stage

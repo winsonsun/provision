@@ -98,6 +98,7 @@ type Machine struct {
 	Owned
 	Bundled
 	Partialed
+	Params
 	// The name of the machine.  This must be unique across all
 	// machines, and by convention it is the FQDN of the machine,
 	// although nothing enforces that.
@@ -139,8 +140,6 @@ type Machine struct {
 	// An array of profiles to apply to this machine in order when looking
 	// for a parameter during rendering.
 	Profiles []string
-	// The Parameters that have been directly set on the Machine.
-	Params map[string]interface{}
 	// The tasks this machine has to run.
 	Tasks []string
 	// The index into the Tasks list for the task that is currently
@@ -241,6 +240,7 @@ func (n *Machine) Validate() {
 	for _, p := range n.Profiles {
 		n.AddError(ValidName("Invalid Profile", p))
 	}
+	n.Params.Validate(n)
 	for _, t := range n.Tasks {
 		parts := strings.SplitN(t, ":", 2)
 		if len(parts) == 2 {
@@ -301,9 +301,7 @@ func (n *Machine) Fill() {
 	if n.Tasks == nil {
 		n.Tasks = []string{}
 	}
-	if n.Params == nil {
-		n.Params = map[string]interface{}{}
-	}
+	n.Params.Fill()
 	if n.HardwareAddrs == nil {
 		n.HardwareAddrs = []string{}
 	}
@@ -332,15 +330,6 @@ func (b *Machine) ToModels(obj interface{}) []Model {
 		res[i] = Model(item)
 	}
 	return res
-}
-
-// match Param interface
-func (b *Machine) GetParams() map[string]interface{} {
-	return copyMap(b.Params)
-}
-
-func (b *Machine) SetParams(p map[string]interface{}) {
-	b.Params = copyMap(p)
 }
 
 // match Profiler interface

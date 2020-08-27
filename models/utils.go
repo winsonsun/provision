@@ -180,6 +180,12 @@ type Paramer interface {
 	SetParams(map[string]interface{})
 }
 
+type RawParamer interface{
+	Paramer
+	GetParam(string, interface{}) error
+	SetParam(string, interface{}) error
+}
+
 // Profiler interface defines if the model has profiles
 type Profiler interface {
 	Model
